@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Property Filter</title>
+  <!-- 
+    Property Filter Wireframe
+    Direct API calls to Housing.com APIs
+  -->
+  <style>
+    :root{
+      --primary:#4838a2;
+      --secondary:#7b68ee;
+      --text:#000;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --card-bg:#fff;
+    }
+    body {
+      font-family: 'Roboto Flex', sans-serif;
+      background-color: #ffffff;
+      color: var(--text);
+      padding: 0;
+      margin: 0;
+    }
+    .update-strip {
+      background-color: var(--primary);
+      color: white;
+      text-align: center;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .update-strip a {
+      color: #ffffff;
+      text-decoration: none;
+      background-color: rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      transition: background 0.3s ease;
+    }
+    .update-strip a:hover { background-color: rgba(255, 255, 255, 0.35); }
+
+    .wrap{ max-width: 720px; margin: 32px auto; padding: 0 16px; }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      background: var(--card-bg);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+    .full{ grid-column: 1 / -1; }
+
+    label { display:block; font-weight:600; font-size:14px; color:#111827; }
+    .hint{ font-size:12px; color:var(--muted); margin-top:4px; transition: color 0.2s ease; }
+    
+    .selection-count {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+      animation: countPulse 0.3s ease;
+    }
+
+    @keyframes countPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    input[type="text"], input[type="number"] {
+      width: 95%; padding: 10px 12px; margin-top: 8px; border: 1px solid #ccc;
+      border-radius: 10px; font-size: 16px !important;
+      transition: all 0.2s ease;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(72, 56, 162, 0.1);
+    }
+
+    #locality {
+      font-size: 16px !important;
+    }
+
+    /* Budget section styles */
+    .budget-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .budget-input-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .currency-symbol {
+      position: absolute;
+      left: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 16px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .budget-input-wrapper input[type="number"] {
+      width: 100%;
+      padding: 10px 12px 10px 32px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      margin-top: 0;
+    }
+
+    .budget-input-wrapper input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(72, 56, 162, 0.1);
+    }
+
+    .budget-increase-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(72, 56, 162, 0.2);
+      white-space: nowrap;
+    }
+
+    .budget-increase-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(72, 56, 162, 0.3);
+    }
+
+    .budget-increase-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(72, 56, 162, 0.2);
+    }
+
+    .btn-icon {
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .btn-text {
+      font-size: 13px;
+    }
+
+    /* Multiselect styles */
+    .multiselect-container {
+      position: relative;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .multiselect-display {
+      width: 95%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.2s ease;
+    }
+
+    .multiselect-display:hover {
+      border-color: var(--primary);
+    }
+
+    .multiselect-placeholder {
+      color: #999;
+    }
+
+    .multiselect-arrow {
+      color: var(--muted);
+      font-size: 12px;
+      transition: transform 0.2s ease;
+    }
+
+    .multiselect-container.active .multiselect-arrow {
+      transform: rotate(180deg);
+    }
+
+    .multiselect-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 95%;
+      background: white;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-top: -1px;
+    }
+
+    .multiselect-option {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .multiselect-option:last-child {
+      border-bottom: none;
+    }
+
+    .multiselect-option:hover {
+      background-color: #f8f7ff;
+    }
+
+    .multiselect-option input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .multiselect-option label {
+      cursor: pointer;
+      font-weight: normal;
+      margin: 0;
+      flex: 1;
+    }
+
+    .multiselect-selected {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .multiselect-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #eef2ff 0%, #dfe3ff 100%);
+      color: var(--primary);
+      border: 1px solid #c7d2fe;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      animation: tagSlideIn 0.3s ease;
+      box-shadow: 0 2px 4px rgba(72, 56, 162, 0.1);
+    }
+
+    @keyframes tagSlideIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-5px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    @keyframes tagSlideOut {
+      from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: scale(0.8) translateY(-5px);
+      }
+    }
+
+    .multiselect-tag-remove {
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--primary);
+      font-size: 18px;
+      line-height: 1;
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      margin-left: 2px;
+    }
+
+    /* Autocomplete dropdown styles */
+    .autocomplete-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .autocomplete-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      display: none;
+      animation: dropdownSlideDown 0.2s ease;
+    }
+
+    @keyframes dropdownSlideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .autocomplete-dropdown::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .autocomplete-dropdown::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    .autocomplete-dropdown::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 10px;
+    }
+
+    .autocomplete-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background-color 0.2s ease;
+      position: relative;
+    }
+
+    .autocomplete-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: -1;
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+
+
+
+
+
+    .autocomplete-item .name {
+      font-weight: 500;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .autocomplete-item .type {
+      display: none;
+    }
+
+    .autocomplete-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .autocomplete-item.selected-item {
+      background-color: #eef2ff;
+      border-left: 3px solid var(--primary);
+    }
+
+    .autocomplete-item.selected-item .name {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .autocomplete-item.selected-item .name::before {
+      content: '✓';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      background-color: var(--primary);
+      color: white;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: bold;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .autocomplete-item:not(.selected-item) .name::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #d1d5db;
+      border-radius: 4px;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .loading {
+      padding: 12px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .loading::before {
+      content: '';
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top: 2px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .no-results {
+      padding: 12px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .action-btn { margin-top: 12px; width: 100%; background-color: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s ease; }
+    
+
+    /* Results */
+    .results{ margin-top:24px; display:grid; grid-template-columns: 1fr; gap:16px; }
+    .result-count{ background:#f8f7ff; border:1px solid var(--border); border-radius:14px; padding:16px; text-align:center; }
+    .result-count .num{ font-size:32px; font-weight:800; color:var(--primary); }
+    .sub{ font-size:13px; color:var(--muted); margin-top:4px; }
+
+    .result-section{ border:1px solid var(--border); border-radius:14px; padding:16px; }
+    .section-title{ font-size:14px; font-weight:700; color:#111827; margin-bottom:8px; }
+    .pill{ display:inline-block; background:#eef2ff; color:var(--primary); border:1px solid #dfe3ff; padding:6px 10px; border-radius:999px; font-size:12px; margin:4px 6px 0 0; }
+
+    .flex-row{ display:flex; gap:12px; flex-wrap:wrap; }
+    .kv{ display:flex; flex-direction:column; background:#fafafa; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px; margin-bottom:8px; }
+    .kv strong{ color:#111827; margin-bottom:4px; }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="grid">
+        <div class="full">
+          <label for="locality">
+            Locality
+            <span class="selection-count" id="localityCount" style="display: none;"></span>
+          </label>
+          <div class="autocomplete-container">
+            <input type="text" id="locality" placeholder="Search and select localities" />
+            <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+            <div class="multiselect-selected" id="localitySelected"></div>
+          </div>
+          <div class="hint" id="localityHint">Type to search and select one or more localities</div>
+        </div>
+
+        <div class="full">
+          <label for="bhk">BHK (number)</label>
+          <div class="multiselect-container">
+            <div class="multiselect-display" id="bhkDisplay" onclick="toggleBhkDropdown()">
+              <span class="multiselect-placeholder">Select BHK</span>
+              <span class="multiselect-arrow">▼</span>
+            </div>
+            <div class="multiselect-dropdown" id="bhkDropdown" style="display: none;">
+              <div class="multiselect-option" onclick="toggleBhkOption(1)">
+                <input type="checkbox" id="bhk-1" value="1" />
+                <label for="bhk-1">1</label>
+              </div>
+              <div class="multiselect-option" onclick="toggleBhkOption(2)">
+                <input type="checkbox" id="bhk-2" value="2" />
+                <label for="bhk-2">2</label>
+              </div>
+              <div class="multiselect-option" onclick="toggleBhkOption(3)">
+                <input type="checkbox" id="bhk-3" value="3" />
+                <label for="bhk-3">3</label>
+              </div>
+              <div class="multiselect-option" onclick="toggleBhkOption(4)">
+                <input type="checkbox" id="bhk-4" value="4" />
+                <label for="bhk-4">4</label>
+              </div>
+              <div class="multiselect-option" onclick="toggleBhkOption(5)">
+                <input type="checkbox" id="bhk-5" value="5" />
+                <label for="bhk-5">5</label>
+              </div>
+            </div>
+            <div class="multiselect-selected" id="bhkSelected"></div>
+          </div>
+          <div class="hint">Select one or more BHK options</div>
+        </div>
+
+        <div class="full">
+          <label for="budgetMax">Budget (Maximum)</label>
+          <div class="budget-container">
+            <div class="budget-input-wrapper">
+              <span class="currency-symbol">₹</span>
+              <input type="number" id="budgetMax" placeholder="Enter maximum budget" min="0" step="1000" />
+            </div>
+            <button type="button" class="budget-increase-btn" onclick="increaseBudget()" title="Add ₹2,000">
+              <span class="btn-icon">+</span>
+            </button>
+          </div>
+          <div class="hint" id="budgetHint">Enter maximum budget amount</div>
+        </div>
+
+        <div class="full">
+          <button class="action-btn" onclick="checkCount()">Show Matches</button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="results" id="results" style="display:none;">
+        <div class="result-count">
+          <div class="num" id="propCount">0</div>
+          <div class="sub" id="summaryText">properties match your filters</div>
+        </div>
+
+        <div class="result-section" id="radiusSection" style="display: none;">
+          <div class="section-title">Radius Expansion</div>
+          <div class="kv"><strong>< 2 km</strong><span id="r2km">—</span><span id="r2kmCount">0 props</span></div>
+          <div class="kv"><strong>< 5 km</strong><span id="r5km">—</span><span id="r5kmCount">0 props</span></div>
+        </div>
+
+        <div class="result-section" id="budgetFlex" style="display: none;">
+          <div class="section-title">Budget Flexibility</div>
+          <div class="flex-row">
+            <span class="pill" id="inc2k">+₹2k → 0 props</span>
+            <span class="pill" id="inc5k">+₹5k → 0 props</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Autocomplete functionality
+    let debounceTimer;
+    let selectedIndex = -1;
+    let suggestions = [];
+    let selectedLocalities = []; // Array to store multiple selected localities
+    let cache = new Map(); // Cache for API responses
+    let isLoading = false;
+    let lastSearchQuery = ''; // Store last search query to keep dropdown open
+    let isProgrammaticUpdate = false; // Flag to prevent input event when updating programmatically
+
+    const localityInput = document.getElementById('locality');
+    const dropdown = document.getElementById('autocompleteDropdown');
+
+    // Debounce function to limit API calls
+    function debounce(func, wait) {
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(debounceTimer);
+          func(...args);
+        };
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(later, wait);
+      };
+    }
+
+    // Check if query is already cached
+    function getCachedResults(query) {
+      return cache.get(query.toLowerCase().trim());
+    }
+
+    // Cache the results
+    function cacheResults(query, results) {
+      cache.set(query.toLowerCase().trim(), results);
+      // Limit cache size to prevent memory issues
+      if (cache.size > 100) {
+        const firstKey = cache.keys().next().value;
+        cache.delete(firstKey);
+      }
+    }
+
+
+
+    // Fetch suggestions from API
+    async function fetchSuggestions(query) {
+      if (!query || query.length < 2) {
+        // Don't hide dropdown if we have suggestions and are in multiselect mode
+        if (suggestions.length === 0) {
+          hideDropdown();
+        }
+        return;
+      }
+      
+      lastSearchQuery = query; // Store the query
+
+      // Check cache first
+      const cachedResults = getCachedResults(query);
+      if (cachedResults) {
+        suggestions = cachedResults;
+        displaySuggestions(cachedResults);
+        return;
+      }
+
+      // Prevent multiple simultaneous requests
+      if (isLoading) {
+        return;
+      }
+
+      isLoading = true;
+      showLoading();
+
+      try {
+        const encodedQuery = encodeURIComponent(query);
+        const url = `https://regions.housing.com/api/v1/polygon/suggest/?service_type=rent&feature_type=locality,sublocality,neighbourhood&input=${encodedQuery}`;
+        
+        console.log('Calling API directly:', url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Referer': window.location.origin,
+            'Origin': window.location.origin
+          },
+          mode: 'cors',
+          credentials: 'omit'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data) {
+          throw new Error('No data received from API server.');
+        }
+        
+        // Cache the results
+        cacheResults(query, data);
+        
+        suggestions = data;
+        displaySuggestions(data);
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        showNoResults('Unable to fetch localities. Please try again.');
+      } finally {
+        isLoading = false;
+      }
+    }
+
+
+
+
+
+    // Display suggestions in dropdown
+    function displaySuggestions(data) {
+      if (!data || data.length === 0) {
+        showNoResults();
+        return;
+      }
+
+      // Show all locality data from API
+      const filteredData = data;
+
+      if (filteredData.length === 0) {
+        showNoResults();
+        return;
+      }
+
+      dropdown.innerHTML = '';
+      selectedIndex = -1;
+
+      filteredData.forEach((item, index) => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'autocomplete-item';
+        itemElement.dataset.index = index;
+        
+        // Check if this item is already selected
+        const isSelected = selectedLocalities.some(loc => loc.uuid === item.uuid);
+        if (isSelected) {
+          itemElement.classList.add('selected-item');
+        }
+        
+        itemElement.innerHTML = `
+          <div class="name">${item.name}</div>
+          <div class="type">${item.type} • ${item.super_type}</div>
+        `;
+
+        itemElement.addEventListener('click', (e) => toggleLocalityItem(item, e));
+        itemElement.addEventListener('mouseenter', () => {
+          selectedIndex = index;
+          updateSelection();
+        });
+        itemElement.addEventListener('mouseleave', () => {
+          // Only clear selection if mouse leaves dropdown entirely
+          if (!dropdown.matches(':hover')) {
+            selectedIndex = -1;
+            updateSelection();
+          }
+        });
+
+        dropdown.appendChild(itemElement);
+      });
+
+      showDropdown();
+    }
+
+    // Show loading state
+    function showLoading() {
+      dropdown.innerHTML = '<div class="loading">Searching localities...</div>';
+      showDropdown();
+    }
+
+    // Show no results
+    function showNoResults(message = 'No localities found') {
+      dropdown.innerHTML = `<div class="no-results">${message}</div>`;
+      showDropdown();
+    }
+
+    // Show dropdown
+    function showDropdown() {
+      dropdown.style.display = 'block';
+    }
+
+    // Hide dropdown
+    function hideDropdown() {
+      dropdown.style.display = 'none';
+      selectedIndex = -1;
+    }
+
+    // Toggle locality selection (multiselect)
+    function toggleLocalityItem(item, event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      
+      const existingIndex = selectedLocalities.findIndex(loc => loc.uuid === item.uuid);
+      const wasSelected = existingIndex >= 0;
+      
+      if (wasSelected) {
+        // Remove if already selected
+        selectedLocalities.splice(existingIndex, 1);
+      } else {
+        // Add if not selected
+        selectedLocalities.push(item);
+      }
+      
+      // Add visual feedback animation
+      const itemElement = event?.target?.closest('.autocomplete-item');
+      if (itemElement) {
+        itemElement.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+          itemElement.style.transform = '';
+        }, 150);
+      }
+      
+      updateLocalityDisplay();
+      
+      // Prevent input event from firing when we programmatically update
+      isProgrammaticUpdate = true;
+      // Clear input to allow searching for more localities
+      localityInput.value = '';
+      // Restore focus to input for continued searching
+      setTimeout(() => {
+        localityInput.focus();
+        isProgrammaticUpdate = false;
+      }, 10);
+      
+      // Keep dropdown open and refresh to show updated selection state
+      // Use the current suggestions if available, otherwise re-fetch last query
+      if (suggestions.length > 0) {
+        // Refresh the display with current suggestions to show updated checkmarks
+        displaySuggestions(suggestions);
+      } else if (lastSearchQuery && lastSearchQuery.length >= 2) {
+        // If we have a last query, re-fetch to show suggestions
+        fetchSuggestions(lastSearchQuery);
+      }
+    }
+
+    // Update locality display with selected tags
+    function updateLocalityDisplay() {
+      const selectedContainer = document.getElementById('localitySelected');
+      const countBadge = document.getElementById('localityCount');
+      const hintText = document.getElementById('localityHint');
+      const currentTags = Array.from(selectedContainer.children);
+      const currentUuids = currentTags.map(tag => tag.dataset.uuid || '').filter(Boolean);
+      const selectedUuids = selectedLocalities.map(loc => loc.uuid);
+      
+      // Update count badge
+      if (selectedLocalities.length > 0) {
+        countBadge.textContent = `${selectedLocalities.length} selected`;
+        countBadge.style.display = 'inline-block';
+        hintText.textContent = `${selectedLocalities.length} localit${selectedLocalities.length === 1 ? 'y' : 'ies'} selected. Continue typing to add more.`;
+        hintText.style.color = 'var(--primary)';
+      } else {
+        countBadge.style.display = 'none';
+        hintText.textContent = 'Type to search and select one or more localities';
+        hintText.style.color = 'var(--muted)';
+      }
+      
+      // Remove tags that are no longer selected
+      currentTags.forEach(tag => {
+        const uuid = tag.dataset.uuid;
+        if (uuid && !selectedUuids.includes(uuid)) {
+          tag.style.animation = 'tagSlideOut 0.2s ease';
+          setTimeout(() => {
+            if (tag.parentNode) {
+              tag.remove();
+            }
+          }, 200);
+        }
+      });
+      
+      // Add new tags
+      selectedLocalities.forEach((locality, index) => {
+        if (!currentUuids.includes(locality.uuid)) {
+          const tag = document.createElement('span');
+          tag.className = 'multiselect-tag';
+          tag.dataset.uuid = locality.uuid;
+          tag.style.animationDelay = `${index * 0.05}s`;
+          tag.innerHTML = `
+            ${locality.name}
+            <span class="multiselect-tag-remove" onclick="removeLocality('${locality.uuid}', event)" title="Remove">×</span>
+          `;
+          selectedContainer.appendChild(tag);
+        }
+      });
+    }
+
+    // Remove a selected locality
+    function removeLocality(uuid, event) {
+      event.stopPropagation();
+      event.preventDefault();
+      
+      // Find and animate the tag before removing
+      const tag = event.target.closest('.multiselect-tag');
+      if (tag) {
+        tag.style.animation = 'tagSlideOut 0.2s ease';
+      }
+      
+      selectedLocalities = selectedLocalities.filter(loc => loc.uuid !== uuid);
+      
+      setTimeout(() => {
+        updateLocalityDisplay();
+        // Refresh dropdown if it's open
+        if (suggestions.length > 0 && dropdown.style.display === 'block') {
+          displaySuggestions(suggestions);
+        }
+      }, 100);
+    }
+
+    // Update selection highlight
+    function updateSelection() {
+      const items = dropdown.querySelectorAll('.autocomplete-item');
+      items.forEach((item, index) => {
+        item.classList.toggle('selected', index === selectedIndex);
+      });
+    }
+
+    // Handle keyboard navigation
+    function handleKeydown(event) {
+      const items = dropdown.querySelectorAll('.autocomplete-item');
+      
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+          updateSelection();
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          selectedIndex = Math.max(selectedIndex - 1, -1);
+          updateSelection();
+          break;
+        case 'Enter':
+          event.preventDefault();
+          if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+            toggleLocalityItem(suggestions[selectedIndex], event);
+          }
+          break;
+        case 'Escape':
+          hideDropdown();
+          break;
+      }
+    }
+
+    // Event listeners
+    localityInput.addEventListener('input', debounce((e) => {
+      // Skip if this is a programmatic update
+      if (isProgrammaticUpdate) {
+        return;
+      }
+      fetchSuggestions(e.target.value);
+    }, 500)); // Increased debounce time for better performance
+
+    localityInput.addEventListener('keydown', handleKeydown);
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!localityInput.contains(e.target) && !dropdown.contains(e.target)) {
+        hideDropdown();
+      }
+    });
+
+    // Focus management
+    localityInput.addEventListener('focus', () => {
+      if (suggestions.length > 0) {
+        showDropdown();
+      } else if (lastSearchQuery && lastSearchQuery.length >= 2) {
+        // Re-fetch last query if input is focused
+        fetchSuggestions(lastSearchQuery);
+      }
+    });
+
+    // Dropdown hover management
+    dropdown.addEventListener('mouseleave', () => {
+      selectedIndex = -1;
+      updateSelection();
+    });
+
+    // BHK Multiselect functionality
+    let selectedBhkValues = [];
+
+    function toggleBhkDropdown() {
+      const container = document.querySelector('.multiselect-container');
+      const dropdown = document.getElementById('bhkDropdown');
+      const isActive = container.classList.contains('active');
+      
+      if (isActive) {
+        container.classList.remove('active');
+        dropdown.style.display = 'none';
+      } else {
+        container.classList.add('active');
+        dropdown.style.display = 'block';
+      }
+    }
+
+    function toggleBhkOption(value) {
+      const checkbox = document.getElementById(`bhk-${value}`);
+      checkbox.checked = !checkbox.checked;
+      
+      if (checkbox.checked) {
+        if (!selectedBhkValues.includes(value)) {
+          selectedBhkValues.push(value);
+        }
+      } else {
+        selectedBhkValues = selectedBhkValues.filter(v => v !== value);
+      }
+      
+      updateBhkDisplay();
+    }
+
+    function updateBhkDisplay() {
+      const display = document.getElementById('bhkDisplay');
+      const placeholder = display.querySelector('.multiselect-placeholder');
+      const selectedContainer = document.getElementById('bhkSelected');
+      
+      selectedContainer.innerHTML = '';
+      
+      if (selectedBhkValues.length === 0) {
+        placeholder.textContent = 'Select BHK';
+        placeholder.style.color = '#999';
+      } else {
+        placeholder.textContent = `${selectedBhkValues.length} selected`;
+        placeholder.style.color = '#111827';
+        
+        selectedBhkValues.sort().forEach(value => {
+          const tag = document.createElement('span');
+          tag.className = 'multiselect-tag';
+          tag.innerHTML = `
+            ${value} BHK
+            <span class="multiselect-tag-remove" onclick="removeBhkOption(${value}, event)">×</span>
+          `;
+          selectedContainer.appendChild(tag);
+        });
+      }
+    }
+
+    function removeBhkOption(value, event) {
+      event.stopPropagation();
+      const checkbox = document.getElementById(`bhk-${value}`);
+      checkbox.checked = false;
+      selectedBhkValues = selectedBhkValues.filter(v => v !== value);
+      updateBhkDisplay();
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const container = document.querySelector('.multiselect-container');
+      if (container && !container.contains(e.target)) {
+        container.classList.remove('active');
+        document.getElementById('bhkDropdown').style.display = 'none';
+      }
+    });
+
+    // Get query parameters from URL
+    function getQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        agentId: params.get('Agent_ID') || params.get('agent_id') || params.get('AgentID') || null,
+        userPhone: params.get('User_phone') || params.get('user_phone') || params.get('UserPhone') || null
+      };
+    }
+
+    // Increase budget by ₹2,000
+    function increaseBudget() {
+      const budgetInput = document.getElementById('budgetMax');
+      const currentValue = parseFloat(budgetInput.value) || 0;
+      const newValue = currentValue + 2000;
+      budgetInput.value = newValue;
+      
+      // Add visual feedback
+      budgetInput.style.transform = 'scale(1.02)';
+      setTimeout(() => {
+        budgetInput.style.transform = '';
+      }, 200);
+      
+      // Update hint text
+      const hintText = document.getElementById('budgetHint');
+      if (hintText) {
+        hintText.textContent = `Budget set to ₹${newValue.toLocaleString('en-IN')}. Click + to increase further.`;
+        hintText.style.color = 'var(--primary)';
+        setTimeout(() => {
+          hintText.textContent = 'Enter maximum budget amount or click + to increase';
+          hintText.style.color = 'var(--muted)';
+        }, 2000);
+      }
+      
+      // Focus the input to show the updated value
+      budgetInput.focus();
+    }
+
+    async function checkCount(){
+      const maxBudget = parseFloat(document.getElementById('budgetMax').value);
+
+      const resultsEl = document.getElementById('results');
+      const countEl = document.getElementById('propCount');
+      const summaryEl = document.getElementById('summaryText');
+
+      // Get query parameters from URL
+      const queryParams = getQueryParams();
+      const agentId = queryParams.agentId;
+      const userPhone = queryParams.userPhone;
+
+      // Prepare lists as requested
+      // List<string> for localities (using UUIDs)
+      const localityUuids = selectedLocalities.map(loc => loc.uuid).filter(uuid => uuid); // Filter out any null/undefined
+      const localityNames = selectedLocalities.map(loc => loc.name);
+      
+      // List<Integer> for BHK values
+      const bhkList = [...selectedBhkValues].filter(bhk => bhk != null).sort((a, b) => a - b); // Sorted list of integers, filtered
+
+      // Validate inputs
+      if(localityUuids.length === 0 || bhkList.length === 0 || isNaN(maxBudget) || maxBudget <= 0){
+        resultsEl.style.display = 'block';
+        countEl.textContent = '—';
+        summaryEl.textContent = 'Please enter valid details (Select at least one Locality, one BHK, and Budget > 0)';
+        document.getElementById('r2km').textContent = '—';
+        document.getElementById('r2kmCount').textContent = '0 props';
+        document.getElementById('r5km').textContent = '—';
+        document.getElementById('r5kmCount').textContent = '0 props';
+        document.getElementById('inc2k').textContent = '+₹2k → —';
+        document.getElementById('inc5k').textContent = '+₹5k → —';
+        return;
+      }
+
+      // Log the lists and query parameters for debugging/verification
+      console.log('Selected Localities (List<string> - UUIDs):', localityUuids);
+      console.log('Selected Localities (List<string> - Names):', localityNames);
+      console.log('Selected BHK (List<Integer>):', bhkList);
+      console.log('Budget:', maxBudget);
+      console.log('Agent_ID (from query params):', agentId);
+      console.log('User_phone (from query params):', userPhone);
+
+      // Show loading state
+      resultsEl.style.display = 'grid';
+      countEl.textContent = 'Loading...';
+      summaryEl.textContent = 'Fetching property count...';
+      
+      const startTime = performance.now();
+
+      try {
+        // Get first locality name for display purposes
+        const firstLocality = selectedLocalities[0];
+        const localityName = firstLocality.name;
+
+        // Build comma-separated values for multiple selections
+        const localityUuidsString = localityUuids.join(','); // Comma-separated UUIDs
+        const bhkString = bhkList.join(','); // Comma-separated BHK values
+
+        // Validate that we have values
+        if (!localityUuidsString || localityUuidsString.trim() === '' || !bhkString || bhkString.trim() === '') {
+          throw new Error(`Invalid selections: locality_uuid="${localityUuidsString}", bhk="${bhkString}"`);
+        }
+
+        // Build API URL with comma-separated values
+        // UUIDs and numbers don't need encoding, commas should remain as commas
+        const baseUrl = 'https://casa.housing.com/api/v1/flat/owner-count';
+        let targetUrl = `${baseUrl}?locality_uuid=${localityUuidsString}&service_type=rent&bhk=${bhkString}&price=${maxBudget}`;
+        
+        // Add query parameters if available (encode these as they might have special chars)
+        if (agentId) {
+          targetUrl += `&Agent_ID=${encodeURIComponent(agentId)}`;
+        }
+        if (userPhone) {
+          targetUrl += `&User_phone=${encodeURIComponent(userPhone)}`;
+        }
+        
+        console.log('URL Parameters being built:');
+        console.log('  locality_uuid:', localityUuidsString);
+        console.log('  bhk:', bhkString);
+        console.log('  price:', maxBudget);
+        console.log('  Agent_ID:', agentId || 'not provided');
+        console.log('  User_phone:', userPhone || 'not provided');
+        
+        console.log('Calling API directly:', targetUrl);
+        console.log('Full data available - Localities (UUIDs):', localityUuids);
+        console.log('Full data available - BHK values:', bhkList);
+        console.log('Comma-separated - locality_uuid:', localityUuidsString);
+        console.log('Comma-separated - bhk:', bhkString);
+        console.log('Query params - Agent_ID:', agentId, 'User_phone:', userPhone);
+
+        // Call API directly with headers similar to Postman
+        const response = await fetch(targetUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Referer': window.location.origin,
+            'Origin': window.location.origin
+          },
+          mode: 'cors',
+          credentials: 'omit'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+
+        if (!data) {
+          throw new Error('No data received from API server.');
+        }
+
+        console.log('API Response:', data);
+
+        if (data && data.data && typeof data.data.count === 'number') {
+          const count = data.data.count;
+          
+          // Calculate response time
+          const responseTime = ((performance.now() - startTime) / 1000).toFixed(2);
+          
+          // Update the count display using the lists
+          const bhkText = bhkList.length === 1 
+            ? `${bhkList[0]} BHK` 
+            : `${bhkList.join(', ')} BHK`;
+          
+          const localityText = localityNames.length === 1
+            ? localityNames[0]
+            : `${localityNames[0]}${localityNames.length > 1 ? ` (+${localityNames.length - 1} more)` : ''}`;
+          
+          countEl.textContent = String(count);
+          summaryEl.textContent = `For ${bhkText} in ${localityText} up to ₹${maxBudget.toLocaleString('en-IN')} (${responseTime}s)`;
+          
+          // Log the lists and query params that were used
+          console.log('Results displayed for:');
+          console.log('  Localities (UUIDs):', localityUuids);
+          console.log('  Localities (Names):', localityNames);
+          console.log('  BHK values:', bhkList);
+          console.log('  Agent_ID:', agentId);
+          console.log('  User_phone:', userPhone);
+
+          // Calculate additional data for UI
+          const near2 = [localityName+" East", localityName+" West", localityName+" Market"];
+          const near5 = [localityName+" Extension", "Green Park", "Central Avenue"];
+
+          const count2k = Math.min(300, Math.round(count * 1.05));
+          const count5k = Math.min(300, Math.round(count * 1.1));
+
+          // Simulated radius counts
+          const count2km = Math.round(count * 0.4);
+          const count5km = Math.round(count * 0.7);
+
+          document.getElementById('r2km').textContent = near2.join(', ');
+          document.getElementById('r2kmCount').textContent = `${count2km} props`;
+          document.getElementById('r5km').textContent = near5.join(', ');
+          document.getElementById('r5kmCount').textContent = `${count5km} props`;
+
+          document.getElementById('inc2k').textContent = `+₹2k → ${count2k} props`;
+          document.getElementById('inc5k').textContent = `+₹5k → ${count5k} props`;
+
+        } else {
+          throw new Error('Invalid response format from API');
+        }
+
+      } catch (error) {
+        console.error('Error fetching property count:', error);
+        
+        // Show error state
+        countEl.textContent = 'Error';
+        summaryEl.textContent = `Failed to fetch data: ${error.message}`;
+        
+        // Reset other fields
+        document.getElementById('r2km').textContent = '—';
+        document.getElementById('r2kmCount').textContent = '0 props';
+        document.getElementById('r5km').textContent = '—';
+        document.getElementById('r5kmCount').textContent = '0 props';
+        document.getElementById('inc2k').textContent = '+₹2k → —';
+        document.getElementById('inc5k').textContent = '+₹5k → —';
+      }
+    }
+  </script>
+</body>
+</html>
