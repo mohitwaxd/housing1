@@ -15,14 +15,17 @@ const axiosInstance = axios.create({
   }
 });
 
-// Add request interceptor to add random delays
-axiosInstance.interceptors.request.use(function (config) {
-  // Add a small random delay to mimic human behavior
-  const delay = Math.random() * 1000 + 500; // 500-1500ms
-  return new Promise(resolve => {
-    setTimeout(() => resolve(config), delay);
+// Add request interceptor to add random delays (only in local development)
+// Note: Removed in production to avoid unnecessary latency in serverless functions
+if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
+  axiosInstance.interceptors.request.use(function (config) {
+    // Add a small random delay to mimic human behavior (local dev only)
+    const delay = Math.random() * 1000 + 500; // 500-1500ms
+    return new Promise(resolve => {
+      setTimeout(() => resolve(config), delay);
+    });
   });
-});
+}
 
 // Enable CORS for all routes with comprehensive configuration
 app.use(cors({
