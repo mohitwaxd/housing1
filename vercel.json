@@ -16,7 +16,7 @@
     },
     {
       "src": "/",
-      "dest": "/property_filter_wireframe.html"
+      "dest": "/server.js"
     },
     {
       "src": "/(.*)",

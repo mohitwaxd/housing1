@@ -207,6 +207,11 @@ app.get('/test-housing', async (req, res) => {
   }
 });
 
+// Root route - serve the HTML file
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'property_filter_wireframe.html'));
+});
+
 // Serve static files (your HTML file) - MUST be after API routes
 app.use(express.static(path.join(__dirname)));
 
