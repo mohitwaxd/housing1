@@ -17,6 +17,14 @@
       "dest": "/server.js"
     },
     {
+      "src": "/health",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/test-housing",
+      "dest": "/server.js"
+    },
+    {
       "src": "/",
       "dest": "/property_filter_wireframe.html"
     },
@@ -25,6 +33,11 @@
       "dest": "/$1"
     }
   ],
+  "functions": {
+    "server.js": {
+      "maxDuration": 30
+    }
+  },
   "env": {
     "NODE_ENV": "production"
   }

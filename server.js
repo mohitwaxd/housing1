@@ -24,13 +24,22 @@ axiosInstance.interceptors.request.use(function (config) {
   });
 });
 
-// Enable CORS for all routes
-app.use(cors());
+// Enable CORS for all routes with comprehensive configuration
+app.use(cors({
+  origin: '*', // Allow all origins (you can restrict this in production)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Accept-Language', 'Cache-Control', 'Pragma'],
+  credentials: false,
+  optionsSuccessStatus: 200
+}));
 
-// Serve static files (your HTML file)
-app.use(express.static(path.join(__dirname)));
+// Handle preflight requests
+app.options('*', cors());
 
-// Proxy endpoint for Housing.com APIs
+// Parse JSON bodies
+app.use(express.json());
+
+// Proxy endpoint for Housing.com APIs (MUST be before static file serving)
 app.get('/api/proxy', async (req, res) => {
   try {
     const { url } = req.query;
@@ -195,15 +204,24 @@ app.get('/test-housing', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Local proxy server running on http://localhost:${PORT}`);
-  console.log(`📁 Serving files from: ${__dirname}`);
-  console.log(`🔗 Open your app at: http://localhost:${PORT}/property_filter_wireframe.html`);
-  console.log(`⚡ Proxy endpoint: http://localhost:${PORT}/api/proxy?url=...`);
-});
+// Serve static files (your HTML file) - MUST be after API routes
+app.use(express.static(path.join(__dirname)));
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\n🛑 Shutting down server...');
-  process.exit(0);
-});
+// Only start server if running locally (not on Vercel)
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Local proxy server running on http://localhost:${PORT}`);
+    console.log(`📁 Serving files from: ${__dirname}`);
+    console.log(`🔗 Open your app at: http://localhost:${PORT}/property_filter_wireframe.html`);
+    console.log(`⚡ Proxy endpoint: http://localhost:${PORT}/api/proxy?url=...`);
+  });
+
+  // Graceful shutdown
+  process.on('SIGINT', () => {
+    console.log('\n🛑 Shutting down server...');
+    process.exit(0);
+  });
+}
+
+// Export the app for Vercel serverless functions
+module.exports = app;
