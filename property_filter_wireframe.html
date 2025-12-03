@@ -98,11 +98,6 @@
       margin-top: 0;
     }
 
-    /* Specific override for Radius input which has no symbol */
-    #radius {
-      padding-left: 12px !important;
-    }
-
     .budget-input-wrapper input[type="number"]:focus {
       outline: none;
       border-color: var(--primary);
@@ -141,6 +136,40 @@
       font-size: 18px;
       font-weight: bold;
       line-height: 1;
+    }
+
+    /* Radius button styles */
+    .radius-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      background: white;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .radius-btn:hover {
+      border-color: var(--primary);
+      background: #f8f7ff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(72, 56, 162, 0.15);
+    }
+
+    .radius-btn.selected {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(72, 56, 162, 0.3);
+    }
+
+    .radius-btn.selected:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(72, 56, 162, 0.4);
     }
 
     /* Multiselect styles */
@@ -419,15 +448,15 @@
 
         <div class="full">
           <label for="radius">Radius (km)</label>
-          <div class="budget-container">
-            <div class="budget-input-wrapper">
-              <input type="number" id="radius" placeholder="Enter radius in km" min="0" step="1" />
-            </div>
-            <button type="button" class="budget-increase-btn" onclick="increaseRadius()" title="Add 5 km">
-              <span class="btn-icon">+</span>
+          <div class="radius-button-container" style="display: flex; gap: 12px; margin-top: 8px;">
+            <button type="button" class="radius-btn" id="radius-2" onclick="selectRadius(2)">
+              2 Km
+            </button>
+            <button type="button" class="radius-btn" id="radius-5" onclick="selectRadius(5)">
+              5 Km
             </button>
           </div>
-          <div class="hint" id="radiusHint">Enter search radius in km</div>
+          <div class="hint" id="radiusHint">Select search radius</div>
         </div>
 
         <div class="full">
@@ -520,11 +549,53 @@
       } finally { isLoading = false; }
     }
 
+    // Get all unique bounding_box_uuids from selected localities
+    function getSelectedBoundingBoxUuids() {
+      const allBoundingBoxUuids = new Set();
+      selectedLocalities.forEach(locality => {
+        if (locality.bounding_box_uuids && Array.isArray(locality.bounding_box_uuids)) {
+          locality.bounding_box_uuids.forEach(uuid => allBoundingBoxUuids.add(uuid));
+        }
+      });
+      return Array.from(allBoundingBoxUuids);
+    }
+
+    // Filter suggestions based on shared bounding_box_uuids
+    function filterSuggestionsByBoundingBox(data) {
+      if (selectedLocalities.length === 0) {
+        return data; // No filtering if no localities are selected
+      }
+
+      const selectedBoundingBoxUuids = getSelectedBoundingBoxUuids();
+      if (selectedBoundingBoxUuids.length === 0) {
+        return data; // No bounding boxes to filter by
+      }
+
+      return data.filter(item => {
+        if (!item.bounding_box_uuids || !Array.isArray(item.bounding_box_uuids)) {
+          return false; // Exclude items without bounding_box_uuids
+        }
+        // Check if item shares at least one bounding_box_uuid with selected localities
+        return item.bounding_box_uuids.some(uuid => selectedBoundingBoxUuids.includes(uuid));
+      });
+    }
+
     function displaySuggestions(data) {
       if (!data || data.length === 0) { showNoResults(); return; }
+      
+      // Filter suggestions based on bounding_box_uuids if localities are selected
+      const filteredData = filterSuggestionsByBoundingBox(data);
+      
+      if (filteredData.length === 0) {
+        showNoResults(selectedLocalities.length > 0 
+          ? 'No localities found in the same area. Try a different search.' 
+          : 'No localities found');
+        return;
+      }
+
       dropdown.innerHTML = '';
       selectedIndex = -1;
-      data.forEach((item, index) => {
+      filteredData.forEach((item, index) => {
         const itemElement = document.createElement('div');
         itemElement.className = 'autocomplete-item';
         itemElement.dataset.index = index;
@@ -565,7 +636,7 @@
       if (selectedLocalities.length > 0) {
         countBadge.textContent = `${selectedLocalities.length} selected`;
         countBadge.style.display = 'inline-block';
-        hintText.textContent = `${selectedLocalities.length} selected. Continue typing to add more.`;
+        hintText.textContent = `${selectedLocalities.length} selected. Showing only localities in the same area.`;
         hintText.style.color = 'var(--primary)';
       } else {
         countBadge.style.display = 'none';
@@ -680,24 +751,33 @@
     }
 
     // Radius Logic
-    function increaseRadius() {
-      const radiusInput = document.getElementById('radius');
-      const newValue = (parseFloat(radiusInput.value) || 0) + 5;
-      radiusInput.value = newValue;
-      radiusInput.style.transform = 'scale(1.02)';
-      setTimeout(() => { radiusInput.style.transform = ''; }, 200);
+    let selectedRadius = null;
+
+    function selectRadius(value) {
+      const button2 = document.getElementById('radius-2');
+      const button5 = document.getElementById('radius-5');
       const hintText = document.getElementById('radiusHint');
-      if (hintText) {
-        hintText.textContent = `Radius set to ${newValue} km`;
+
+      // Toggle selection: if clicking the same button, deselect it
+      if (selectedRadius === value) {
+        selectedRadius = null;
+        button2.classList.remove('selected');
+        button5.classList.remove('selected');
+        hintText.textContent = 'Select search radius';
+        hintText.style.color = 'var(--muted)';
+      } else {
+        selectedRadius = value;
+        button2.classList.toggle('selected', value === 2);
+        button5.classList.toggle('selected', value === 5);
+        hintText.textContent = `Radius set to ${value} km`;
         hintText.style.color = 'var(--primary)';
-        setTimeout(() => { hintText.textContent = 'Enter search radius in km'; hintText.style.color = 'var(--muted)'; }, 2000);
       }
     }
 
     async function checkCount(){
       const maxBudget = parseFloat(document.getElementById('budgetMax').value);
       // GET RADIUS VALUE
-      const radiusVal = parseFloat(document.getElementById('radius').value);
+      const radiusVal = selectedRadius;
 
       const resultsEl = document.getElementById('results');
       const countEl = document.getElementById('propCount');
@@ -731,7 +811,7 @@
         let targetUrl = `${baseUrl}?locality_uuid=${localityUuidsString}&service_type=rent&bhk=${bhkString}&price=${maxBudget}`;
         
         // ADD RADIUS FIRST (if exists)
-        if (!isNaN(radiusVal) && radiusVal > 0) {
+        if (radiusVal !== null && radiusVal > 0) {
           targetUrl += `&radius_in_km=${radiusVal}`;
         }
         
@@ -759,7 +839,7 @@
           const localityText = localityNames[0] + (localityNames.length > 1 ? ` (+${localityNames.length - 1})` : '');
           
           let summary = `For ${bhkText} in ${localityText} up to ₹${maxBudget.toLocaleString('en-IN')}`;
-          if(!isNaN(radiusVal) && radiusVal > 0) summary += ` within ${radiusVal} km`;
+          if(radiusVal !== null && radiusVal > 0) summary += ` within ${radiusVal} km`;
           summary += ` (${responseTime}s)`;
           
           countEl.textContent = String(count);
