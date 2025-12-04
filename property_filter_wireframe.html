@@ -421,11 +421,11 @@
               <span class="multiselect-arrow">▼</span>
             </div>
             <div class="multiselect-dropdown" id="bhkDropdown" style="display: none;">
-              <div class="multiselect-option" onclick="toggleBhkOption(1)"><input type="checkbox" id="bhk-1" value="1" /><label for="bhk-1">1</label></div>
-              <div class="multiselect-option" onclick="toggleBhkOption(2)"><input type="checkbox" id="bhk-2" value="2" /><label for="bhk-2">2</label></div>
-              <div class="multiselect-option" onclick="toggleBhkOption(3)"><input type="checkbox" id="bhk-3" value="3" /><label for="bhk-3">3</label></div>
-              <div class="multiselect-option" onclick="toggleBhkOption(4)"><input type="checkbox" id="bhk-4" value="4" /><label for="bhk-4">4</label></div>
-              <div class="multiselect-option" onclick="toggleBhkOption(5)"><input type="checkbox" id="bhk-5" value="5" /><label for="bhk-5">5</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick(1, event)"><input type="checkbox" id="bhk-1" value="1" /><label for="bhk-1">1</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick(2, event)"><input type="checkbox" id="bhk-2" value="2" /><label for="bhk-2">2</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick(3, event)"><input type="checkbox" id="bhk-3" value="3" /><label for="bhk-3">3</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick(4, event)"><input type="checkbox" id="bhk-4" value="4" /><label for="bhk-4">4</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick(5, event)"><input type="checkbox" id="bhk-5" value="5" /><label for="bhk-5">5</label></div>
             </div>
             <div class="multiselect-selected" id="bhkSelected"></div>
           </div>
@@ -692,13 +692,58 @@
       container.classList.toggle('active');
       document.getElementById('bhkDropdown').style.display = container.classList.contains('active') ? 'block' : 'none';
     }
+    function handleBhkOptionClick(value, event) {
+      // Stop event from bubbling to document click handler
+      event.stopPropagation();
+      
+      const checkbox = document.getElementById(`bhk-${value}`);
+      const target = event.target;
+      
+      // If clicking directly on checkbox, let it handle its own toggle
+      // The change event will handle the state sync
+      if (target === checkbox) {
+        return; // Let checkbox toggle naturally, change event will sync
+      }
+      
+      // If clicking on label, the label's 'for' attribute will toggle the checkbox
+      // So we just let it happen - the change event will sync the state
+      if (target.tagName === 'LABEL') {
+        return; // Label's 'for' will toggle checkbox, change event will sync
+      }
+      
+      // If clicking on the option div (but not checkbox or label), toggle the checkbox
+      checkbox.checked = !checkbox.checked;
+      // Manually trigger change event to ensure sync happens
+      checkbox.dispatchEvent(new Event('change'));
+    }
+
+    function syncBhkState(value, isChecked) {
+      if (isChecked) {
+        if (!selectedBhkValues.includes(value)) selectedBhkValues.push(value);
+      } else {
+        selectedBhkValues = selectedBhkValues.filter(v => v !== value);
+      }
+      updateBhkDisplay();
+    }
+
     function toggleBhkOption(value) {
       const checkbox = document.getElementById(`bhk-${value}`);
       checkbox.checked = !checkbox.checked;
-      if (checkbox.checked) { if (!selectedBhkValues.includes(value)) selectedBhkValues.push(value); }
-      else { selectedBhkValues = selectedBhkValues.filter(v => v !== value); }
-      updateBhkDisplay();
+      syncBhkState(value, checkbox.checked);
     }
+
+    // Initialize checkbox change event listeners
+    // Since script is at bottom of body, DOM is already loaded
+    (function initBhkCheckboxes() {
+      for (let i = 1; i <= 5; i++) {
+        const checkbox = document.getElementById(`bhk-${i}`);
+        if (checkbox) {
+          checkbox.addEventListener('change', function() {
+            syncBhkState(i, this.checked);
+          });
+        }
+      }
+    })();
     function updateBhkDisplay() {
       const display = document.getElementById('bhkDisplay');
       const placeholder = display.querySelector('.multiselect-placeholder');
@@ -717,9 +762,10 @@
     }
     function removeBhkOption(value, event) {
       event.stopPropagation();
-      document.getElementById(`bhk-${value}`).checked = false;
-      selectedBhkValues = selectedBhkValues.filter(v => v !== value);
-      updateBhkDisplay();
+      const checkbox = document.getElementById(`bhk-${value}`);
+      checkbox.checked = false;
+      // Dispatch change event to ensure consistency with other handlers
+      checkbox.dispatchEvent(new Event('change'));
     }
     document.addEventListener('click', (e) => {
       const container = document.querySelector('.multiselect-container');
