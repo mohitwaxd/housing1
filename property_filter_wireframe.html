@@ -862,8 +862,8 @@
         }
         
         // APPEND Agent_ID AND User_phone AT THE VERY END
-        if (agentId) targetUrl += `&Agent_ID=${encodeURIComponent(agentId)}`;
-        if (userPhone) targetUrl += `&User_phone=${encodeURIComponent(userPhone)}`;
+        if (agentId) targetUrl += `&agent_id=${encodeURIComponent(agentId)}`;
+        if (userPhone) targetUrl += `&user_phone=${encodeURIComponent(userPhone)}`;
         
         console.log('Calling API:', targetUrl);
 
