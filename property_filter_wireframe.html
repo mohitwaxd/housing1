@@ -854,7 +854,7 @@
         const bhkString = bhkList.join(',');
 
         const baseUrl = 'https://casa.housing.com/api/v1/flat/owner-count';
-        let targetUrl = `${baseUrl}?locality_uuid=${localityUuidsString}&service_type=rent&bhk=${bhkString}&price=${maxBudget}`;
+        let targetUrl = `${baseUrl}?locality_uuids=${localityUuidsString}&service_type=rent&bhks=${bhkString}&price=${maxBudget}`;
         
         // ADD RADIUS FIRST (if exists)
         if (radiusVal !== null && radiusVal > 0) {
