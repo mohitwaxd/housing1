@@ -138,38 +138,75 @@
       line-height: 1;
     }
 
-    /* Radius button styles */
-    .radius-btn {
+    /* Radius number input styles */
+    .radius-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .radius-input-wrapper {
+      position: relative;
       flex: 1;
-      padding: 12px 20px;
-      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+    }
+
+    .radius-input-wrapper input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 16px;
+      transition: all 0.2s ease;
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .radius-input-wrapper input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(72, 56, 162, 0.1);
+    }
+
+    .radius-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 18px;
       font-weight: 600;
-      background: white;
-      color: var(--text);
       cursor: pointer;
       transition: all 0.2s ease;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 8px rgba(72, 56, 162, 0.2);
+      min-width: 44px;
+      height: 44px;
     }
 
     .radius-btn:hover {
-      border-color: var(--primary);
-      background: #f8f7ff;
       transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(72, 56, 162, 0.15);
+      box-shadow: 0 4px 12px rgba(72, 56, 162, 0.3);
     }
 
-    .radius-btn.selected {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: white;
-      border-color: var(--primary);
-      box-shadow: 0 2px 8px rgba(72, 56, 162, 0.3);
+    .radius-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(72, 56, 162, 0.2);
     }
 
-    .radius-btn.selected:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(72, 56, 162, 0.4);
+    .radius-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .radius-btn:disabled:hover {
+      transform: none;
+      box-shadow: 0 2px 8px rgba(72, 56, 162, 0.2);
     }
 
     /* Multiselect styles */
@@ -448,15 +485,14 @@
 
         <div class="full">
           <label for="radius">Radius (km)</label>
-          <div class="radius-button-container" style="display: flex; gap: 12px; margin-top: 8px;">
-            <button type="button" class="radius-btn" id="radius-2" onclick="selectRadius(2)">
-              2 Km
-            </button>
-            <button type="button" class="radius-btn" id="radius-5" onclick="selectRadius(5)">
-              5 Km
-            </button>
+          <div class="radius-container">
+            <button type="button" class="radius-btn" id="radiusDecrease" onclick="decreaseRadius()" title="Decrease radius">−</button>
+            <div class="radius-input-wrapper">
+              <input type="number" id="radius" name="radius" min="1" max="5" value="1" step="1" />
+            </div>
+            <button type="button" class="radius-btn" id="radiusIncrease" onclick="increaseRadius()" title="Increase radius">+</button>
           </div>
-          <div class="hint" id="radiusHint">Select search radius</div>
+          <div class="hint" id="radiusHint">Enter radius between 1-5 km</div>
         </div>
 
         <div class="full">
@@ -797,33 +833,76 @@
     }
 
     // Radius Logic
-    let selectedRadius = null;
+    let selectedRadius = 1; // Default to 1 km
 
-    function selectRadius(value) {
-      const button2 = document.getElementById('radius-2');
-      const button5 = document.getElementById('radius-5');
-      const hintText = document.getElementById('radiusHint');
+    const radiusInput = document.getElementById('radius');
+    const radiusDecreaseBtn = document.getElementById('radiusDecrease');
+    const radiusIncreaseBtn = document.getElementById('radiusIncrease');
+    const radiusHint = document.getElementById('radiusHint');
 
-      // Toggle selection: if clicking the same button, deselect it
-      if (selectedRadius === value) {
-        selectedRadius = null;
-        button2.classList.remove('selected');
-        button5.classList.remove('selected');
-        hintText.textContent = 'Select search radius';
-        hintText.style.color = 'var(--muted)';
-      } else {
-        selectedRadius = value;
-        button2.classList.toggle('selected', value === 2);
-        button5.classList.toggle('selected', value === 5);
-        hintText.textContent = `Radius set to ${value} km`;
-        hintText.style.color = 'var(--primary)';
+    function updateRadiusValue(value) {
+      // Clamp value between 1 and 5
+      const clampedValue = Math.max(1, Math.min(5, parseInt(value) || 1));
+      selectedRadius = clampedValue;
+      radiusInput.value = clampedValue;
+      
+      // Update button states
+      radiusDecreaseBtn.disabled = clampedValue <= 1;
+      radiusIncreaseBtn.disabled = clampedValue >= 5;
+      
+      // Update hint
+      radiusHint.textContent = `Search radius set to ${clampedValue} km`;
+      radiusHint.style.color = 'var(--primary)';
+      
+      // Add visual feedback
+      radiusInput.style.transform = 'scale(1.02)';
+      setTimeout(() => { radiusInput.style.transform = ''; }, 200);
+    }
+
+    function decreaseRadius() {
+      const currentValue = parseInt(radiusInput.value) || 1;
+      if (currentValue > 1) {
+        updateRadiusValue(currentValue - 1);
       }
+    }
+
+    function increaseRadius() {
+      const currentValue = parseInt(radiusInput.value) || 1;
+      if (currentValue < 5) {
+        updateRadiusValue(currentValue + 1);
+      }
+    }
+
+    // Initialize radius input
+    if (radiusInput) {
+      updateRadiusValue(radiusInput.value);
+      
+      // Handle direct input
+      radiusInput.addEventListener('input', (e) => {
+        updateRadiusValue(e.target.value);
+      });
+      
+      // Handle blur to ensure value is within range
+      radiusInput.addEventListener('blur', (e) => {
+        updateRadiusValue(e.target.value);
+      });
+      
+      // Prevent invalid values on keypress
+      radiusInput.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          increaseRadius();
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          decreaseRadius();
+        }
+      });
     }
 
     async function checkCount(){
       const maxBudget = parseFloat(document.getElementById('budgetMax').value);
-      // GET RADIUS VALUE
-      const radiusVal = selectedRadius;
+      // GET RADIUS VALUE from number input
+      const radiusVal = selectedRadius || parseInt(document.getElementById('radius').value) || 1;
 
       const resultsEl = document.getElementById('results');
       const countEl = document.getElementById('propCount');
@@ -856,8 +935,8 @@
         const baseUrl = 'https://casa.housing.com/api/v1/flat/owner-count';
         let targetUrl = `${baseUrl}?locality_uuids=${localityUuidsString}&service_type=rent&bhks=${bhkString}&price=${maxBudget}`;
         
-        // ADD RADIUS FIRST (if exists)
-        if (radiusVal !== null && radiusVal > 0) {
+        // ADD RADIUS (always include since default is 1)
+        if (radiusVal > 0) {
           targetUrl += `&radius_in_km=${radiusVal}`;
         }
         
@@ -885,7 +964,7 @@
           const localityText = localityNames[0] + (localityNames.length > 1 ? ` (+${localityNames.length - 1})` : '');
           
           let summary = `For ${bhkText} in ${localityText} up to ₹${maxBudget.toLocaleString('en-IN')}`;
-          if(radiusVal !== null && radiusVal > 0) summary += ` within ${radiusVal} km`;
+          if(radiusVal > 0) summary += ` within ${radiusVal} km`;
           summary += ` (${responseTime}s)`;
           
           countEl.textContent = String(count);
