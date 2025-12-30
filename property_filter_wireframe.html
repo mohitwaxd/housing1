@@ -488,11 +488,11 @@
           <div class="radius-container">
             <button type="button" class="radius-btn" id="radiusDecrease" onclick="decreaseRadius()" title="Decrease radius">−</button>
             <div class="radius-input-wrapper">
-              <input type="number" id="radius" name="radius" min="1" max="5" value="1" step="1" />
+              <input type="number" id="radius" name="radius" min="0" max="5" value="1" step="1" />
             </div>
             <button type="button" class="radius-btn" id="radiusIncrease" onclick="increaseRadius()" title="Increase radius">+</button>
           </div>
-          <div class="hint" id="radiusHint">Enter radius between 1-5 km</div>
+          <div class="hint" id="radiusHint">Enter radius between 0-5 km</div>
         </div>
 
         <div class="full">
@@ -833,7 +833,7 @@
     }
 
     // Radius Logic
-    let selectedRadius = 1; // Default to 1 km
+    let selectedRadius = 1; // Default to 1 km (can be 0-5)
 
     const radiusInput = document.getElementById('radius');
     const radiusDecreaseBtn = document.getElementById('radiusDecrease');
@@ -841,17 +841,21 @@
     const radiusHint = document.getElementById('radiusHint');
 
     function updateRadiusValue(value) {
-      // Clamp value between 1 and 5
-      const clampedValue = Math.max(1, Math.min(5, parseInt(value) || 1));
+      // Clamp value between 0 and 5
+      const clampedValue = Math.max(0, Math.min(5, parseInt(value) || 0));
       selectedRadius = clampedValue;
       radiusInput.value = clampedValue;
       
       // Update button states
-      radiusDecreaseBtn.disabled = clampedValue <= 1;
+      radiusDecreaseBtn.disabled = clampedValue <= 0;
       radiusIncreaseBtn.disabled = clampedValue >= 5;
       
       // Update hint
-      radiusHint.textContent = `Search radius set to ${clampedValue} km`;
+      if (clampedValue === 0) {
+        radiusHint.textContent = 'No radius limit (exact locality only)';
+      } else {
+        radiusHint.textContent = `Search radius set to ${clampedValue} km`;
+      }
       radiusHint.style.color = 'var(--primary)';
       
       // Add visual feedback
@@ -860,14 +864,14 @@
     }
 
     function decreaseRadius() {
-      const currentValue = parseInt(radiusInput.value) || 1;
-      if (currentValue > 1) {
+      const currentValue = parseInt(radiusInput.value) || 0;
+      if (currentValue > 0) {
         updateRadiusValue(currentValue - 1);
       }
     }
 
     function increaseRadius() {
-      const currentValue = parseInt(radiusInput.value) || 1;
+      const currentValue = parseInt(radiusInput.value) || 0;
       if (currentValue < 5) {
         updateRadiusValue(currentValue + 1);
       }
@@ -902,7 +906,7 @@
     async function checkCount(){
       const maxBudget = parseFloat(document.getElementById('budgetMax').value);
       // GET RADIUS VALUE from number input
-      const radiusVal = selectedRadius || parseInt(document.getElementById('radius').value) || 1;
+      const radiusVal = selectedRadius !== undefined ? selectedRadius : (parseInt(document.getElementById('radius').value) || 0);
 
       const resultsEl = document.getElementById('results');
       const countEl = document.getElementById('propCount');
@@ -935,7 +939,7 @@
         const baseUrl = 'https://casa.housing.com/api/v1/flat/owner-count';
         let targetUrl = `${baseUrl}?locality_uuids=${localityUuidsString}&service_type=rent&bhks=${bhkString}&price=${maxBudget}`;
         
-        // ADD RADIUS (always include since default is 1)
+        // ADD RADIUS (only if > 0, 0 means no radius limit)
         if (radiusVal > 0) {
           targetUrl += `&radius_in_km=${radiusVal}`;
         }
