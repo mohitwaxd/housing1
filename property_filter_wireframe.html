@@ -417,19 +417,188 @@
     .no-results { padding: 12px 16px; text-align: center; color: var(--muted); font-size: 14px; font-style: italic; }
     .action-btn { margin-top: 12px; width: 100%; background-color: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s ease; }
 
-    /* Results */
-    .results{ margin-top:24px; display:grid; grid-template-columns: 1fr; gap:16px; }
-    .result-count{ background:#f8f7ff; border:1px solid var(--border); border-radius:14px; padding:16px; text-align:center; }
-    .result-count .num{ font-size:32px; font-weight:800; color:var(--primary); }
-    .sub{ font-size:13px; color:var(--muted); margin-top:4px; }
+    /* Results - Compact Professional Design */
+    .results{ margin-top:16px; display:grid; grid-template-columns: 1fr; gap:10px; }
+    .result-count{ 
+      background:#ffffff; 
+      border:1px solid var(--border); 
+      border-radius:8px; 
+      padding:12px 16px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .result-count .num{ 
+      font-size:26px; 
+      font-weight:700; 
+      color:var(--primary);
+      line-height: 1;
+    }
+    .result-count .sub{ 
+      font-size:12px; 
+      color:#6b7280; 
+      margin:0;
+      font-weight: 500;
+      line-height: 1.4;
+    }
 
-    .result-section{ border:1px solid var(--border); border-radius:14px; padding:16px; }
+    .result-section{ border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom: 0; }
     .section-title{ font-size:14px; font-weight:700; color:#111827; margin-bottom:8px; }
+    
+    /* Professional section title for adjacent localities */
+    #adjacentLocalitiesSection .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    
+    #adjacentLocalitiesSection .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--primary);
+      border-radius: 2px;
+      display: inline-block;
+    }
     .pill{ display:inline-block; background:#eef2ff; color:var(--primary); border:1px solid #dfe3ff; padding:6px 10px; border-radius:999px; font-size:12px; margin:4px 6px 0 0; }
 
     .flex-row{ display:flex; gap:12px; flex-wrap:wrap; }
     .kv{ display:flex; flex-direction:column; background:#fafafa; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px; margin-bottom:8px; }
     .kv strong{ color:#111827; margin-bottom:4px; }
+
+    /* Professional Adjacent Localities Card Styles */
+    .adjacent-locality-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      animation: cardSlideIn 0.3s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes cardSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .adjacent-locality-card:hover {
+      border-color: #d1d5db;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .adjacent-locality-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .adjacent-locality-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .adjacent-locality-name::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .adjacent-count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #f3f4f6;
+      color: #6b7280;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      min-width: 28px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .adjacent-localities-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 0;
+    }
+
+    .adjacent-locality-tag {
+      display: inline-flex;
+      align-items: center;
+      background: #f9fafb;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      letter-spacing: -0.01em;
+    }
+
+    .adjacent-locality-tag:hover {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+      color: #111827;
+    }
+
+    .adjacent-locality-tag::before {
+      content: '';
+      width: 0;
+      height: 0;
+      margin: 0;
+    }
+
+    .adjacent-empty-message {
+      color: #6b7280;
+      font-size: 13px;
+      font-weight: 400;
+      font-style: italic;
+      padding: 8px 0;
+    }
+
+    .adjacent-empty-state {
+      text-align: center;
+      padding: 32px 24px;
+      color: #6b7280;
+      font-size: 14px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      font-weight: 400;
+    }
   </style>
 </head>
 <body>
@@ -518,6 +687,11 @@
             <span class="pill" id="inc2k">+₹2k → 0 props</span>
             <span class="pill" id="inc5k">+₹5k → 0 props</span>
           </div>
+        </div>
+
+        <div class="result-section" id="adjacentLocalitiesSection" style="display: none;">
+          <div class="section-title">Adjacent Localities</div>
+          <div id="adjacentLocalitiesContent"></div>
         </div>
       </div>
     </div>
@@ -903,6 +1077,43 @@
       });
     }
 
+    // Fetch adjacent localities for a given locality UUID
+    async function fetchAdjacentLocalities(localityUuid, radius = 5) {
+      try {
+        const targetUrl = `https://regions.housing.com/api/v1/similar_localities?locality_uuid=${localityUuid}&service=rent&count=5&radius=${radius}`;
+        const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+        const response = await fetch(proxyUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+        
+        if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+        const data = await response.json();
+        
+        // API Response structure: { "selected_locality": {...}, "data": [...] }
+        // Each item in data array has "polygon_name" field
+        // Extract polygon_name from data.data array and limit to max 5
+        if (data && data.data && Array.isArray(data.data)) {
+          const adjacentNames = data.data
+            .slice(0, 5) // Ensure max 5 items per locality
+            .map(item => {
+              // Extract polygon_name field from each item
+              return item.polygon_name || item.name || '';
+            })
+            .filter(Boolean); // Remove empty strings
+          
+          console.log(`Fetched ${adjacentNames.length} adjacent localities for ${localityUuid} with radius ${radius}`);
+          return adjacentNames;
+        }
+        console.warn(`Invalid API response structure for ${localityUuid}:`, data);
+        return [];
+      } catch (error) {
+        console.error(`Error fetching adjacent localities for ${localityUuid}:`, error);
+        return [];
+      }
+    }
+
     async function checkCount(){
       const maxBudget = parseFloat(document.getElementById('budgetMax').value);
       // GET RADIUS VALUE from number input
@@ -963,16 +1174,14 @@
         
         if (data && data.data && typeof data.data.count === 'number') {
           const count = data.data.count;
-          const responseTime = ((performance.now() - startTime) / 1000).toFixed(2);
-          const bhkText = bhkList.join(', ') + ' BHK';
-          const localityText = localityNames[0] + (localityNames.length > 1 ? ` (+${localityNames.length - 1})` : '');
           
-          let summary = `For ${bhkText} in ${localityText} up to ₹${maxBudget.toLocaleString('en-IN')}`;
-          if(radiusVal > 0) summary += ` within ${radiusVal} km`;
-          summary += ` (${responseTime}s)`;
-          
+          // Display count with simple label - no detailed summary text
           countEl.textContent = String(count);
-          summaryEl.textContent = summary;
+          summaryEl.textContent = 'Properties';
+          summaryEl.style.display = 'block';
+          summaryEl.style.fontSize = '12px';
+          summaryEl.style.color = '#6b7280';
+          summaryEl.style.fontWeight = '500';
           
           // UI Simulations
           const near2 = [localityNames[0]+" East", localityNames[0]+" West"];
@@ -984,10 +1193,92 @@
           document.getElementById('inc2k').textContent = `+₹2k → ${Math.round(count * 1.05)} props`;
           document.getElementById('inc5k').textContent = `+₹5k → ${Math.round(count * 1.1)} props`;
         }
+
+        // Fetch and display adjacent localities for each selected locality
+        // Use radius from form (radiusVal), default to 5 if not set
+        await fetchAndDisplayAdjacentLocalities(radiusVal || 5);
       } catch (error) {
         console.error(error);
         countEl.textContent = 'Error';
         summaryEl.textContent = `Failed to fetch data: ${error.message}`;
+      }
+    }
+
+    // Fetch and display adjacent localities for all selected localities
+    async function fetchAndDisplayAdjacentLocalities(radius = 5) {
+      const adjacentSection = document.getElementById('adjacentLocalitiesSection');
+      const adjacentContent = document.getElementById('adjacentLocalitiesContent');
+      
+      if (selectedLocalities.length === 0) {
+        adjacentSection.style.display = 'none';
+        return;
+      }
+
+      adjacentSection.style.display = 'block';
+      adjacentContent.innerHTML = '<div class="loading">Fetching adjacent localities...</div>';
+
+      try {
+        // Fetch adjacent localities for each selected locality in parallel
+        const adjacentPromises = selectedLocalities.map(async (locality) => {
+          const adjacentNames = await fetchAdjacentLocalities(locality.uuid, radius);
+          return {
+            baseName: locality.name,
+            adjacentNames: adjacentNames
+          };
+        });
+
+        const results = await Promise.all(adjacentPromises);
+        
+        // Display results with enhanced UI - show card for all base localities
+        adjacentContent.innerHTML = '';
+
+        results.forEach((result, index) => {
+          const card = document.createElement('div');
+          card.className = 'adjacent-locality-card';
+          
+          // Add subtle animation delay for staggered effect
+          card.style.animationDelay = `${index * 0.05}s`;
+          
+          const header = document.createElement('div');
+          header.className = 'adjacent-locality-header';
+          
+          const nameDiv = document.createElement('div');
+          nameDiv.className = 'adjacent-locality-name';
+          nameDiv.textContent = result.baseName;
+          
+          const countBadge = document.createElement('span');
+          countBadge.className = 'adjacent-count-badge';
+          countBadge.textContent = result.adjacentNames.length;
+          
+          header.appendChild(nameDiv);
+          header.appendChild(countBadge);
+          
+          const listDiv = document.createElement('div');
+          listDiv.className = 'adjacent-localities-list';
+          
+          // Display adjacent localities or empty state message
+          if (result.adjacentNames.length > 0) {
+            result.adjacentNames.forEach((name) => {
+              const tag = document.createElement('span');
+              tag.className = 'adjacent-locality-tag';
+              tag.textContent = name;
+              listDiv.appendChild(tag);
+            });
+          } else {
+            // Show empty state message within the card
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'adjacent-empty-message';
+            emptyMessage.textContent = 'No adjacent localities found';
+            listDiv.appendChild(emptyMessage);
+          }
+          
+          card.appendChild(header);
+          card.appendChild(listDiv);
+          adjacentContent.appendChild(card);
+        });
+      } catch (error) {
+        console.error('Error fetching adjacent localities:', error);
+        adjacentContent.innerHTML = '<div class="no-results">Failed to fetch adjacent localities</div>';
       }
     }
   </script>
