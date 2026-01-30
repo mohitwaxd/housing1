@@ -627,11 +627,13 @@
               <span class="multiselect-arrow">▼</span>
             </div>
             <div class="multiselect-dropdown" id="bhkDropdown" style="display: none;">
-              <div class="multiselect-option" onclick="handleBhkOptionClick(1, event)"><input type="checkbox" id="bhk-1" value="1" /><label for="bhk-1">1</label></div>
-              <div class="multiselect-option" onclick="handleBhkOptionClick(2, event)"><input type="checkbox" id="bhk-2" value="2" /><label for="bhk-2">2</label></div>
-              <div class="multiselect-option" onclick="handleBhkOptionClick(3, event)"><input type="checkbox" id="bhk-3" value="3" /><label for="bhk-3">3</label></div>
-              <div class="multiselect-option" onclick="handleBhkOptionClick(4, event)"><input type="checkbox" id="bhk-4" value="4" /><label for="bhk-4">4</label></div>
-              <div class="multiselect-option" onclick="handleBhkOptionClick(5, event)"><input type="checkbox" id="bhk-5" value="5" /><label for="bhk-5">5</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick('1rk', event)"><input type="checkbox" id="bhk-1rk" value="1rk" /><label for="bhk-1rk">1 RK</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick('1bhk', event)"><input type="checkbox" id="bhk-1bhk" value="1bhk" /><label for="bhk-1bhk">1 BHK</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick('2bhk', event)"><input type="checkbox" id="bhk-2bhk" value="2bhk" /><label for="bhk-2bhk">2 BHK</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick('3bhk', event)"><input type="checkbox" id="bhk-3bhk" value="3bhk" /><label for="bhk-3bhk">3 BHK</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick('4bhk', event)"><input type="checkbox" id="bhk-4bhk" value="4bhk" /><label for="bhk-4bhk">4 BHK</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick('5bhk', event)"><input type="checkbox" id="bhk-5bhk" value="5bhk" /><label for="bhk-5bhk">5 BHK</label></div>
+              <div class="multiselect-option" onclick="handleBhkOptionClick('5plus', event)"><input type="checkbox" id="bhk-5plus" value="5plus" /><label for="bhk-5plus">5+ BHK</label></div>
             </div>
             <div class="multiselect-selected" id="bhkSelected"></div>
           </div>
@@ -897,11 +899,27 @@
 
     // BHK Multiselect
     let selectedBhkValues = [];
+    
+    // BHK value mapping: internal value -> display label -> API value
+    const bhkMapping = {
+      '1rk': { label: '1 RK', apiValue: '1' },
+      '1bhk': { label: '1 BHK', apiValue: '1' },
+      '2bhk': { label: '2 BHK', apiValue: '2' },
+      '3bhk': { label: '3 BHK', apiValue: '3' },
+      '4bhk': { label: '4 BHK', apiValue: '4' },
+      '5bhk': { label: '5 BHK', apiValue: '5' },
+      '5plus': { label: '5+ BHK', apiValue: '5+' }
+    };
+    
+    // Sort order for BHK values
+    const bhkSortOrder = ['1rk', '1bhk', '2bhk', '3bhk', '4bhk', '5bhk', '5plus'];
+    
     function toggleBhkDropdown() {
       const container = document.querySelector('.multiselect-container');
       container.classList.toggle('active');
       document.getElementById('bhkDropdown').style.display = container.classList.contains('active') ? 'block' : 'none';
     }
+    
     function handleBhkOptionClick(value, event) {
       // Stop event from bubbling to document click handler
       event.stopPropagation();
@@ -945,31 +963,43 @@
     // Initialize checkbox change event listeners
     // Since script is at bottom of body, DOM is already loaded
     (function initBhkCheckboxes() {
-      for (let i = 1; i <= 5; i++) {
-        const checkbox = document.getElementById(`bhk-${i}`);
+      const bhkValues = ['1rk', '1bhk', '2bhk', '3bhk', '4bhk', '5bhk', '5plus'];
+      bhkValues.forEach(value => {
+        const checkbox = document.getElementById(`bhk-${value}`);
         if (checkbox) {
           checkbox.addEventListener('change', function() {
-            syncBhkState(i, this.checked);
+            syncBhkState(value, this.checked);
           });
         }
-      }
+      });
     })();
+    
     function updateBhkDisplay() {
       const display = document.getElementById('bhkDisplay');
       const placeholder = display.querySelector('.multiselect-placeholder');
       const selectedContainer = document.getElementById('bhkSelected');
       selectedContainer.innerHTML = '';
-      if (selectedBhkValues.length === 0) { placeholder.textContent = 'Select BHK'; placeholder.style.color = '#999'; }
-      else {
-        placeholder.textContent = `${selectedBhkValues.length} selected`; placeholder.style.color = '#111827';
-        selectedBhkValues.sort().forEach(value => {
+      if (selectedBhkValues.length === 0) { 
+        placeholder.textContent = 'Select BHK'; 
+        placeholder.style.color = '#999'; 
+      } else {
+        placeholder.textContent = `${selectedBhkValues.length} selected`; 
+        placeholder.style.color = '#111827';
+        // Sort by predefined order
+        selectedBhkValues.sort((a, b) => {
+          const indexA = bhkSortOrder.indexOf(a);
+          const indexB = bhkSortOrder.indexOf(b);
+          return indexA - indexB;
+        }).forEach(value => {
           const tag = document.createElement('span');
           tag.className = 'multiselect-tag';
-          tag.innerHTML = `${value} BHK <span class="multiselect-tag-remove" onclick="removeBhkOption(${value}, event)">×</span>`;
+          const label = bhkMapping[value]?.label || value;
+          tag.innerHTML = `${label} <span class="multiselect-tag-remove" onclick="removeBhkOption('${value}', event)">×</span>`;
           selectedContainer.appendChild(tag);
         });
       }
     }
+    
     function removeBhkOption(value, event) {
       event.stopPropagation();
       const checkbox = document.getElementById(`bhk-${value}`);
@@ -1114,6 +1144,51 @@
       }
     }
 
+    // Send POST request to telecrm API to update lead
+    async function sendTelecrmUpdate(propertyCount, agentId, userPhone, gammaApiUrl) {
+      try {
+        const telecrmUrl = 'https://next-api.telecrm.in/enterprise/624bdce3a475f90009c770ba/autoupdatelead';
+        const bearerToken = '1c097b13-e5d5-4bf3-9ac9-683fa9f2b6171737553160686:6cb5641a-4a4b-45b2-bdf9-041312e22962';
+        
+        const requestBody = {
+          fields: {
+            phone: userPhone || ''
+          },
+          actions: [
+            {
+              type: "ACTION_1001",
+              fields: {
+                property_count: String(propertyCount),
+                agent_id: agentId || '',
+                notes: gammaApiUrl || ''
+              }
+            }
+          ]
+        };
+
+        const response = await fetch(telecrmUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${bearerToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+          console.error('Telecrm API request failed:', response.status, response.statusText);
+          return;
+        }
+
+        const data = await response.json();
+        console.log('Telecrm update successful:', data);
+      } catch (error) {
+        console.error('Error sending telecrm update:', error);
+        // Don't throw error - we don't want to break the main flow if this fails
+      }
+    }
+
     async function checkCount(){
       const maxBudget = parseFloat(document.getElementById('budgetMax').value);
       // GET RADIUS VALUE from number input
@@ -1128,7 +1203,10 @@
 
       const localityUuids = selectedLocalities.map(loc => loc.uuid).filter(Boolean);
       const localityNames = selectedLocalities.map(loc => loc.name);
-      const bhkList = [...selectedBhkValues].filter(bhk => bhk != null).sort((a, b) => a - b);
+      // Map BHK values to full text labels (e.g., "1 RK", "1 BHK", "2 BHK")
+      const bhkList = selectedBhkValues
+        .map(value => bhkMapping[value]?.label)
+        .filter(bhk => bhk != null);
 
       if(localityUuids.length === 0 || bhkList.length === 0 || isNaN(maxBudget) || maxBudget <= 0){
         resultsEl.style.display = 'block';
@@ -1145,10 +1223,11 @@
 
       try {
         const localityUuidsString = localityUuids.join(',');
-        const bhkString = bhkList.join(',');
+        // Encode each BHK value individually before joining
+        const bhkString = bhkList.map(bhk => encodeURIComponent(bhk)).join(',');
 
         const baseUrl = 'https://casa.housing.com/api/v1/flat/owner-count';
-        let targetUrl = `${baseUrl}?locality_uuids=${localityUuidsString}&service_type=rent&bhks=${bhkString}&price=${maxBudget}`;
+        let targetUrl = `${baseUrl}?locality_uuids=${localityUuidsString}&service_type=rent&bhk_type_names=${bhkString}&price=${maxBudget}`;
         
         // ADD RADIUS (only if > 0, 0 means no radius limit)
         if (radiusVal > 0) {
@@ -1192,11 +1271,18 @@
           document.getElementById('r5kmCount').textContent = `${Math.round(count * 0.7)} props`;
           document.getElementById('inc2k').textContent = `+₹2k → ${Math.round(count * 1.05)} props`;
           document.getElementById('inc5k').textContent = `+₹5k → ${Math.round(count * 1.1)} props`;
+          
+          // Send POST request to telecrm API after count is found
+          await sendTelecrmUpdate(count, agentId, userPhone, targetUrl);
         }
 
-        // Fetch and display adjacent localities for each selected locality
-        // Use radius from form (radiusVal), default to 5 if not set
-        await fetchAndDisplayAdjacentLocalities(radiusVal || 5);
+        // Fetch and display adjacent localities only when radius > 0
+        if (radiusVal > 0) {
+          await fetchAndDisplayAdjacentLocalities(radiusVal);
+        } else {
+          const adjacentSection = document.getElementById('adjacentLocalitiesSection');
+          if (adjacentSection) adjacentSection.style.display = 'none';
+        }
       } catch (error) {
         console.error(error);
         countEl.textContent = 'Error';
