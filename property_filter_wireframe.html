@@ -1148,7 +1148,7 @@
     async function sendTelecrmUpdate(propertyCount, agentId, userPhone, gammaApiUrl) {
       try {
         const telecrmUrl = 'https://next-api.telecrm.in/enterprise/624bdce3a475f90009c770ba/autoupdatelead';
-        const bearerToken = '1c097b13-e5d5-4bf3-9ac9-683fa9f2b6171737553160686:6cb5641a-4a4b-45b2-bdf9-041312e22962';
+        const bearerToken = 'c8e8f004-fc89-464e-ad7f-35f89b33f6331738569502306:6221abb1-63f4-4cf5-b7f0-a6c9417b7ea2';
         
         const requestBody = {
           fields: {
@@ -1156,7 +1156,7 @@
           },
           actions: [
             {
-              type: "ACTION_1001",
+              type: "ACTION_1004",
               fields: {
                 property_count: String(propertyCount),
                 agent_id: agentId || '',
